@@ -10,7 +10,7 @@
     <select id="recipientSelect">
         <option value="flash">Flash</option>
         <option value="ruby">Ruby</option>
-        <option value="all">All</option>
+                <option value="all">All</option>
     </select>
     <select id="messageTypeSelect">
         <option value="technical_query">Technical Query</option>
@@ -20,21 +20,24 @@
     <div id="messages"></div>
 
     <script>
-        const websocket = new WebSocket('wss://gemini-collab-production.up.railway.app/'); // Use YOUR Railway URL
+        const websocket = new WebSocket('wss://gemini-collab-production.up.railway.app/'); // ***REPLACE WITH YOUR RAILWAY URL***
 
         websocket.onopen = () => {
             console.log('Connected to WebSocket server');
         };
 
         websocket.onmessage = event => {
-            console.log("Raw message received from server:", event.data); // Log the raw message
+            console.log("Raw message received from server:", event.data);
             try {
                 const parsedMessage = JSON.parse(event.data);
-                console.log("Parsed message from server:", parsedMessage); // Log the parsed message
+                console.log("Parsed message from server:", parsedMessage);
+
                 const messagesDiv = document.getElementById('messages');
-                messagesDiv.innerHTML += `<p><b>${parsedMessage.sender}:</b> ${parsedMessage.content}</p>`;
+                const newMessage = document.createElement('p');
+                newMessage.innerHTML = `<b>${parsedMessage.sender}:</b> ${parsedMessage.content}`;
+                messagesDiv.appendChild(newMessage);
             } catch (error) {
-                console.error("Error parsing message:", event.data, error); // Log both the raw data and the error
+                console.error("Error parsing message:", event.data, error);
             }
         };
 
@@ -48,15 +51,14 @@
             const recipient = document.getElementById('recipientSelect').value;
             const messageType = document.getElementById('messageTypeSelect').value;
 
-            const messageObject = {
+            const jsonMessage = JSON.stringify({
                 sender: "client",
                 recipient: recipient,
                 messageType: messageType,
                 content: message
-            };
+            });
 
-            const jsonMessage = JSON.stringify(messageObject);
-            console.log("Sending message to server:", jsonMessage); // Log the JSON message being sent
+            console.log("Sending message to server:", jsonMessage);
             websocket.send(jsonMessage);
             messageInput.value = '';
         };
