@@ -6,10 +6,12 @@ const port = process.env.PORT || 8080
 const wss = new WebSocket.Server({ noServer: true });
 
 wss.on('connection', ws => {
+    console.log("New client connected to WebSocket server"); // Log new client connection
     ws.on('message', message => {
+        console.log("Raw message received:", message); // Log the raw message
         try {
             const parsedMessage = JSON.parse(message);
-
+            console.log("Parsed message:", parsedMessage);
             if (parsedMessage.recipient === 'flash') {
                 handleFlashMessage(ws, parsedMessage);
             } else if (parsedMessage.recipient === 'ruby') {
@@ -24,12 +26,14 @@ wss.on('connection', ws => {
                 ws.send(JSON.stringify({sender: "server", recipient: "client", messageType: "error", content: "Invalid recipient"}));
             }
         } catch (error) {
+            console.error("Error parsing message:", message, error);
             ws.send(JSON.stringify({sender: "server", recipient: "client", messageType: "error", content: "Invalid JSON message"}));
         }
     });
 });
 
 function handleFlashMessage(ws, message) {
+    console.log("Handling Flash message:", message);
     if (message.messageType === 'technical_query') {
         let responseContent = "";
         if (message.content.includes("Yjs")) {
@@ -39,17 +43,26 @@ function handleFlashMessage(ws, message) {
         } else {
             responseContent = "I can help with technical implementations and code examples. Ask me about Yjs, WebSockets, or other technical topics.";
         }
-        ws.send(JSON.stringify({ sender: "flash", recipient: "client", messageType: "technical_response", content: responseContent }));
+        const response = { sender: "flash", recipient: "client", messageType: "technical_response", content: responseContent };
+        console.log("Flash response:", JSON.stringify(response)); // Log the response
+        ws.send(JSON.stringify(response));
     } else {
-      ws.send(JSON.stringify({sender:"flash", recipient: "client", messageType: "response", content: "I only handle technical queries."}));
+        const response = {sender:"flash", recipient: "client", messageType: "response", content: "I only handle technical queries."};
+        console.log("Flash response:", JSON.stringify(response));
+        ws.send(JSON.stringify(response));
     }
 }
 
 function handleRubyMessage(ws, message) {
+    console.log("Handling Ruby message:", message);
     if (message.messageType === 'strategy_request') {
-        ws.send(JSON.stringify({ sender: "ruby", recipient: "client", messageType: "strategy_response", content: "We should focus on user experience in this phase." }));
+        const response = { sender: "ruby", recipient: "client", messageType: "strategy_response", content: "We should focus on user experience in this phase." };
+        console.log("Ruby response:", JSON.stringify(response));
+        ws.send(JSON.stringify(response));
     } else {
-      ws.send(JSON.stringify({sender:"ruby", recipient: "client", messageType: "response", content: "I handle strategy requests."}));
+        const response = {sender:"ruby", recipient: "client", messageType: "response", content: "I handle strategy requests."};
+        console.log("Ruby response:", JSON.stringify(response));
+        ws.send(JSON.stringify(response));
     }
 }
 
