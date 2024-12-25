@@ -1,24 +1,58 @@
 <!DOCTYPE html>
 <html>
-<head><title>WebSocket Test</title></head>
+<head>
+    <title>Gemini Collaboration</title>
+</head>
 <body>
-    <script>
-        const ws = new WebSocket('wss://gemini-collab-production.up.railway.app'); // Replace with your URL
+    <h1>Gemini Collaboration</h1>
+    <input type="text" id="messageInput">
+    <button id="sendButton">Send</button>
+    <select id="recipientSelect">
+        <option value="flash">Flash</option>
+        <option value="ruby">Ruby</option>
+        <option value="all">All</option>
+    </select>
+    <select id="messageTypeSelect">
+        <option value="technical_query">Technical Query</option>
+        <option value="strategy_request">Strategy Request</option>
+        <option value="general">General</option>
+    </select>
+    <div id="messages"></div>
 
-        ws.onopen = () => {
+    <script>
+        const websocket = new WebSocket('wss://gemini-collab-production.up.railway.app/'); // Replace with YOUR Railway URL (no trailing slash)
+
+        websocket.onopen = () => {
             console.log('Connected to WebSocket server');
         };
 
-        ws.onmessage = (event) => {
-            console.log('Message from server: ', event.data);
+        websocket.onmessage = event => {
+            try {
+                const parsedMessage = JSON.parse(event.data);
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML += `<p><b>${parsedMessage.sender}:</b> ${parsedMessage.content}</p>`;
+            } catch (error) {
+                console.error("Error parsing message: ", event.data);
+            }
         };
 
-        ws.onerror = (error) => {
-            console.log('WebSocket Error: ', error);
+        websocket.onclose = () => {
+            console.log('Disconnected from WebSocket server');
         };
 
-        ws.onclose = () => {
-            console.log('WebSocket Closed');
+        document.getElementById('sendButton').onclick = () => {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            const recipient = document.getElementById("recipientSelect").value;
+            const messageType = document.getElementById("messageTypeSelect").value;
+            const jsonMessage = JSON.stringify({
+                sender: "client",
+                recipient: recipient,
+                messageType: messageType,
+                content: message
+            });
+            websocket.send(jsonMessage);
+            messageInput.value = '';
         };
     </script>
 </body>
