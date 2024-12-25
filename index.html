@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gemini Collaboration</title>
+</head>
+<body>
+    <h1>Gemini Collaboration</h1>
+    <input type="text" id="messageInput">
+    <button id="sendButton">Send</button>
+    <div id="messages"></div>
+
+    <script>
+        const websocket = new WebSocket('wss://gemini-collab-production.up.railway.app'); // Replace with your actual Railway URL
+
+        websocket.onopen = () => {
+            console.log('Connected to WebSocket server');
+        };
+
+        websocket.onmessage = event => {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML += `<p>Received: ${event.data}</p>`;
+        };
+
+        websocket.onclose = () => {
+            console.log('Disconnected from WebSocket server');
+        };
+
+        document.getElementById('sendButton').onclick = () => {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            websocket.send(message);
+            messageInput.value = '';
+        };
+    </script>
+</body>
+</html>
