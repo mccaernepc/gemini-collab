@@ -10,15 +10,20 @@
     <div id="messages"></div>
 
     <script>
-        const websocket = new WebSocket('wss://gemini-collab-production.up.railway.app/');
+        const websocket = new WebSocket('wss://gemini-collab-production.up.railway.app/'); // Replace with your Railway URL
 
         websocket.onopen = () => {
             console.log('Connected to WebSocket server');
         };
 
         websocket.onmessage = event => {
-            const messagesDiv = document.getElementById('messages');
-            messagesDiv.innerHTML += `<p>Received: ${event.data}</p>`;
+            try {
+                const parsedMessage = JSON.parse(event.data); // Parse the JSON response
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML += `<p><b>${parsedMessage.sender}:</b> ${parsedMessage.content}</p>`; // Display sender and content
+            } catch (error) {
+                console.error("Error parsing message: ", event.data);
+            }
         };
 
         websocket.onclose = () => {
@@ -28,8 +33,14 @@
         document.getElementById('sendButton').onclick = () => {
             const messageInput = document.getElementById('messageInput');
             const message = messageInput.value;
-            websocket.send(message);
-            messageInput.value = '';
+            const jsonMessage = JSON.stringify({ // Create JSON message
+                sender: "client",
+                recipient: "flash", // Or "ruby" or "all"
+                messageType: "technical_query", // Or "strategy_request" or "general"
+                content: message
+            });
+            websocket.send(jsonMessage);
+            messageInput.value = ''; // Clear the input field
         };
     </script>
 </body>
